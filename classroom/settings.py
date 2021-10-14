@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9*fj4iivx8vcj%-49ft8rnwq_%n*dr01$ry_2bj6-df@b&lb^m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['34.229.189.99']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'classroom',
+    'sistema_calificacion',
     'django.contrib.staticfiles',
 ]
 
@@ -73,12 +75,18 @@ WSGI_APPLICATION = 'classroom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Aplicacion',
+        'USER': 'aplicacionClassroom',
+        'PASSWORD': '52173167@5158aE',
+        'HOST': '34.224.3.67',
+        'PORT': '3306',
     }
 }
+
 
 
 # Password validation
