@@ -15,6 +15,9 @@
 <a href="{%url 'entregas' articulo.pk %}" class="btn btn-primary" type="submit"> Entregas</a>
 
         {% endif %}
+        {%if is_calificar%}
+        <a href="{%url 'calificar' articulo.pk %}" class="btn btn-primary" type="submit"> Calificar</a>
+        {%endif%}
 
     </div>
 {%endfor%}

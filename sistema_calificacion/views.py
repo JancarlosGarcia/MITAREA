@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, Sum
 from django.shortcuts import render, get_list_or_404, redirect
 from .forms import *
 from datetime import timezone, datetime
@@ -118,6 +118,7 @@ class ListarEntregas(ListView):
         context = super(ListarEntregas, self).get_context_data(**kwargs)
         context['title'] = 'Listar Entregas'
         context['is_entregas'] = True
+        context['is_calificar'] = True
         return context
 
 
@@ -281,9 +282,22 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
     template_name = 'create_update.html'
     success_url = reverse_lazy('inicio')
 
+    def test_func(self):
+        return self.request.user.userapp.rol_teacher.id_rol == 3
+
+    def handle_no_permission(self):
+        return redirect('403')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['pk'] = self.kwargs['pk']
+        return kwargs
+
+
+
+
 
     def form_valid(self, form):
-        calificacion_tarea = form.cleaned_data['calificacion']
         year: int = datetime.now().year
         codigo_entrega = self.kwargs['pk']
         entrega = EntregaTareas.objects.filter(codigo_tarea=codigo_entrega).get()
@@ -291,7 +305,11 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
         alumno = entrega.alumno
         asignacion = Asignacion.objects.filter(year=year, id_student=alumno)
         obtener = asignacion.get()
-        CursoAsignacion.objects.filter(curso=curso, asignacion=obtener).update(F('tareas') + calificacion_tarea)
+        consulta_total = \
+            EntregaTareas.objects.filter(alumno=alumno, tarea__curso=curso).exclude(codigo_tarea=codigo_entrega).aggregate(Sum('calificacion'))
+        total_suma = consulta_total['calificacion__sum'] + form.cleaned_data['calificacion']
+        subjectAssign = CursoAsignacion.objects.filter(curso=curso, asignacion_id__id_student=alumno)
+        subjectAssign.update(tareas=F('tareas') + total_suma)
         return super(ViewCalificarTarea, self).form_valid(form)
 
     def get_context_data(self, **kwargs):

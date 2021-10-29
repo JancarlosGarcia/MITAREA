@@ -70,7 +70,7 @@ class GenerateAssignation(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(GenerateAssignation, self).__init__(*args, **kwargs)
-        year:int = datetime.now().year
+        year: int = datetime.now().year
         self.fields['id_student'].queryset = UserApp.objects.filter(
             rol_teacher=4)
         for visible in self.visible_fields():
@@ -101,13 +101,11 @@ class AssignRol(forms.ModelForm):
 
 
 class FormCrearTarea(forms.ModelForm):
-
     class Meta:
         model = Tareas
-        fields = ('title','description', 'curso', 'valor', 'fecha_de_entrega',)
+        fields = ('title', 'description', 'curso', 'valor', 'fecha_de_entrega',)
 
     fecha_de_entrega = forms.DateField()
-
 
     def __init__(self, *args, **kwargs):
         query = Curso.objects.filter(id_curso=kwargs.pop('pk'))
@@ -131,9 +129,21 @@ class FormSubirTarea(forms.ModelForm):
 class FormCalificarTarea(forms.ModelForm):
     class Meta:
         model = EntregaTareas
-        fields = ('calificacion',)
+        fields = ('calificacion', 'archivo_asociado')
 
-    def __init__(self,*args,**kwargs):
+    def clean(self):
+        cleaned_data = super(FormCalificarTarea, self).clean()
+        query = EntregaTareas.objects.filter(codigo_tarea=self.identifier).values('tarea')
+        id_tarea = query[0]['tarea']
+        valor_maximo = Tareas.objects.filter(id_tarea=id_tarea).values('valor')[0]['valor']
+        valor_actual = cleaned_data.get('calificacion')
+        if valor_actual < 0 or valor_actual > valor_maximo:
+            raise forms.ValidationError(f"Debe ingresar un valor mayor o igual a 0 y menor o igual a "
+                                        f"{valor_maximo}")
+
+    def __init__(self, *args, **kwargs):
+        EntregaTareas.objects.filter(codigo_tarea=kwargs.pop('pk'))
+        self.identifier = kwargs.pop('pk')
         super(FormCalificarTarea, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'

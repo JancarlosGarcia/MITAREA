@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from django.conf.urls import include
 from sistema_calificacion.views import *
 
@@ -39,4 +41,4 @@ urlpatterns = [
     path('listar/estudiantesCurso/<int:pk>',ListStudentsCourse.as_view(),name='asignados'),
     path('listar/estudiantes', ListStudent.as_view(), name='estudiantes'),
     path('accounts/', include('django.contrib.auth.urls'))
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -121,6 +121,10 @@ class EntregaTareas(models.Model):
     fecha_de_subida = models.DateTimeField(null=True)
 
     def __str__(self):
-        return self.alumno.id_userApp.first_name
+        try:
+            fecha = self.fecha_de_subida.strftime("%m/%d/%Y")
+        except:
+            fecha = '0'
+        return f'{self.alumno.id_userApp.first_name} {self.alumno.id_userApp.last_name}  {fecha}'
 
 
