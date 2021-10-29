@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %} Prohibido{%endblock%}
+
+
+{% block content %}
+<meta http-equiv="refresh" content="4;url={% url 'inicio'%}">
+
+<div class="alert alert-danger" role="alert">
+<h1 class="text-center"> ERROR 403</h1>
+<h2 class="text-center">su usario no tiene acceso a esta vista</h2>
+</div>
+{%endblock%}

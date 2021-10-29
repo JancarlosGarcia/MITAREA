@@ -1,0 +1,32 @@
+{%extends "base.html"%}
+{%block title%}
+{{title}}
+{%endblock%}
+{%block content%}
+{%load static%}
+<div class="card text-black mb-3 mx-auto" style="width: 29rem;opacity:0.9">
+    <h4 class="card-header">
+      {{title}}
+    </h4>
+
+    <div class="card-body">
+        <p class="card-text"> {{description}}</p>
+        <form action="" class="was-validate" method="post" enctype="multipart/form-data">
+
+            {%csrf_token%}
+            {{form.as_p}}
+            {%if is_valid %}
+            <button class="btn btn-primary" type="submit"> Registrar</button>
+            {%else%}
+            <div class="alert alert-warning">Ya se ha subido un archivo </div>
+            <button class="btn btn-dark" disabled="true" type="submit"> Registrar</button>
+            {%endif%}
+
+        </form>
+
+    </div>
+
+</div>
+
+
+{%endblock%}

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'classroom',
     'sistema_calificacion',
     'django.contrib.staticfiles',
+    "django_tables2",
 ]
 
 MIDDLEWARE = [
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'classroom.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [f'{BASE_DIR}/sistema_calificaciones/Templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,12 +79,8 @@ WSGI_APPLICATION = 'classroom.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Aplicacion',
-        'USER': 'aplicacionClassroom',
-        'PASSWORD': '52173167@5158aE',
-        'HOST': '34.224.3.67',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR/'db.sqlite3',
     }
 }
 

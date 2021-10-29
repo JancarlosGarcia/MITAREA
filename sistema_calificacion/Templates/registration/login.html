@@ -1,0 +1,23 @@
+{%extends "base.html"%}
+{%block title%}
+Login
+{%endblock%}
+{%block content%}
+<div class="card text-black mb-3 mx-auto" style="width: 16rem;opacity:0.9">
+    <h4 class="card-header">
+        Iniciar session
+    </h4>
+    <div class="card-body">
+        <form action="" class="was-validate" method="post" enctype="multipart/form-data">
+            {%csrf_token%}
+            <p class="card-text "><label for="id_username"> Nombre de usuario </label></p>
+            <p class="card-text">{{form.username}} </p>
+            <p class="card-text "><label for="id_password"> contraseña </label></p>
+            <p class="card-text">{{form.password}} </p>
+            <button class="btn btn-primary" type="submit"> Iniciar session</button>
+        </form>
+
+    </div>
+
+</div>
+{%endblock%}

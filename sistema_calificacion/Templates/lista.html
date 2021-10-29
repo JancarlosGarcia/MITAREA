@@ -1,0 +1,35 @@
+{%extends "base.html"%}
+{%block title %} {{title}}  {%endblock%}
+{%block content%}
+<h1>{{title}} </h1>
+{%for articulo in object_list%}
+<div class="card text-white bg-dark mb-3 mx-auto" style="width: 29rem;opacity:0.9;">
+    <div class="card-header">
+        {{articulo}}
+    </div>
+    <div class="card-body">
+        {%if is_alumno%}
+<a href="{%url 'subir' articulo.pk %}" class="btn btn-primary" type="submit"> Subir Tarea</a>
+        {%endif%}
+        {%if is_teacher %}
+        <button class="btn btn-primary" type="submit"> Entregas</button>
+        {% endif %}
+    </div>
+{%endfor%}
+ <span class="current">
+      Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+  </span>
+     <nav >
+              <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">  <a  class="page-link" href="?page=1">&laquo; Primera</a></li>
+                  <li class="page-item">  <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                  <li class="page-item"> <a  class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                  <li class="page-item"> <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">ultima &raquo;</a></li>
+                {% endif %}
+              </ul>
+     </nav>
+{%endblock%}

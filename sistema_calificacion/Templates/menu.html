@@ -1,0 +1,78 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2 collapse show d-md-flex bg-light pt-2 pl-0 min-vh-100" id="sidebar">
+            <ul class="nav flex-column flex-nowrap overflow-hidden navbar-light bg-ligh">
+                <li class="nav-item">
+                    <a class="nav-link text-truncate" href="{% url 'inicio' %}"><i class="fa fa-home"></i>
+                        <span class="d-none d-sm-inline">Inicio</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-truncate" href="#"><i class="fas fa-user"></i>
+                        <span class="d-none d-sm-inline">Acerca de</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link collapsed text-truncate" href="#submenu1" data-toggle="collapse" data-target="#submenu1">
+                        <i class="fa fa-table"></i> <span class="d-none d-sm-inline">Alumnos</span></a>
+                    <div class="collapse" id="submenu1" aria-expanded="false">
+                        <ul class="flex-column pl-2 nav">
+                            <li class="nav-item">
+                                <a class="nav-link  text-truncate collapsed py-1" href="#submenu1sub1" data-toggle="collapse" data-target="#submenu1sub1">
+                                    <span>Funciones</span></a>
+                                <div class="collapse" id="submenu1sub1" aria-expanded="false">
+                                    <ul class="flex-column nav pl-4">
+                                        <li class="nav-item">
+                                            <a class="nav-link p-1 text-truncate" href="#">
+                                                <i class="fas fa-thumbtack"></i>Registrar alumno </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link p-1 text-truncate" href="#">
+                                                <i class="fas fa-thumbtack"></i> Modificar Informacion </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link p-1 text-truncate" href="#">
+                                                <i class="fas fa-thumbtack"></i> Asignar a Curso </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+
+
+                        </ul>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link collapsed text-truncate" href="#submenu2" data-toggle="collapse" data-target="#submenu2">
+                        <i class="fas fa-user"></i> <span class="d-none d-sm-inline">{{user.get_username}}</span></a>
+                    <div class="collapse" id="submenu2" aria-expanded="false">
+                        <ul class="flex-column pl-2 nav">
+                            <li class="nav-item"><a class="nav-link py-0" href="#"><i class="fas fa-thumbtack"></i>  <span>Establecer estilo</span></a></li>
+
+                            <li class="nav-item"><a class="nav-link py-0" href="#"><i class="fas fa-thumbtack"></i><span>Editar datos</span></a></li>
+
+                        </ul>
+
+
+                    </div>
+
+
+                </li>
+
+                <li class="nav-item"><a class="nav-link text-truncate" href="#"><i class="fas fa-chalkboard-teacher"></i><span class="d-none d-sm-inline">Cursos Asignados</span></a></li>
+                <li class="nav-item"><a class="nav-link text-truncate" href="#"><i class="fa fa-download"></i> <span class="d-none d-sm-inline">Export</span></a></li>
+                <li class="nav-item">
+                    <a class="nav-link text-truncate" href="{% url 'logout'%}?next={{request.path}}"><i class="fas fa-sign-out-alt"  aria-hidden="true"></i>
+                        <span class="d-none d-sm-inline">Cerrar session</span></a>
+                </li>
+
+            </ul>
+        </div>
+        <div class="col pt-2">
+            <h2>
+                <a href="" data-target="#sidebar" data-toggle="collapse" class="d-md-none"><i class="fa fa-bars"></i></a> Sistema de gestion de calificaciones </h2>
+            {%include "listacursos.html"%}
+
+        </div>
+    </div>
+</div>

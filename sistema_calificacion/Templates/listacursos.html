@@ -1,0 +1,42 @@
+
+
+<div class="container">
+
+
+  <h1 class="mt-4 mb-3">Cursos
+
+  </h1>
+
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a href="/">inicio</a>
+    </li>
+    <li class="breadcrumb-item active">Cursos</li>
+  </ol>
+
+  <div class="row">
+
+
+    <div class="col-md-8">
+
+
+      {%for articulo in object_list%}
+<div class="card mb-4">
+
+        <div class="card-body">
+          <h2 class="card-title">{{articulo}}</h2>
+           <a href="{% url 'lista'  articulo.pk%}" class="btn btn-primary"> Lista Tareas</a>
+            {%if is_teacher%}
+            <a href="{% url 'crearTarea'  articulo.pk%}" class="btn btn-primary"> Crear Tareas</a>
+            {%endif%}
+
+
+        </div>
+
+      </div>
+
+{%endfor%}
+
+    </div>
+  </div>
+</div>
