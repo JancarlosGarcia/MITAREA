@@ -120,4 +120,7 @@ class EntregaTareas(models.Model):
     archivo_asociado = models.FileField(upload_to='./tareas')
     fecha_de_subida = models.DateTimeField(null=True)
 
+    def __str__(self):
+        return self.alumno.id_userApp.first_name
+
 

@@ -12,8 +12,10 @@
 <a href="{%url 'subir' articulo.pk %}" class="btn btn-primary" type="submit"> Subir Tarea</a>
         {%endif%}
         {%if is_teacher %}
-        <button class="btn btn-primary" type="submit"> Entregas</button>
+<a href="{%url 'entregas' articulo.pk %}" class="btn btn-primary" type="submit"> Entregas</a>
+
         {% endif %}
+
     </div>
 {%endfor%}
  <span class="current">

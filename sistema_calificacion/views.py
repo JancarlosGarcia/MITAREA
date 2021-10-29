@@ -106,6 +106,23 @@ class ViewSubirTarea(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         return context
 
 
+class ListarEntregas(ListView):
+    model = EntregaTareas
+    template_name = 'lista.html'
+    paginate_by = 7
+
+    def get_queryset(self):
+        return get_list_or_404(EntregaTareas.objects.filter(tarea=self.kwargs['pk']))
+
+    def get_context_data(self, **kwargs):
+        context = super(ListarEntregas, self).get_context_data(**kwargs)
+        context['title'] = 'Listar Entregas'
+        context['is_entregas'] = True
+        return context
+
+
+
+
 class ViewCrearTarea(CreateView):
     template_name = 'create_update.html'
     success_url = reverse_lazy('inicio')

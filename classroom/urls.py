@@ -24,6 +24,7 @@ urlpatterns = [
     path('crear/curso', CreateCurso.as_view(), name='curso'),
     path('crear/rol', CreateRol.as_view(), name='rol'),
     path('accounts/profile/', perfil, name='perfil'),
+    path('lista/entregas/<int:pk>',ListarEntregas.as_view(),name='entregas'),
     path('tabla/<int:pk>', TableCalifications.as_view(),name='tabla'),
     path('crear/tareaa/<int:pk>',ViewCrearTarea.as_view(),name='crearTarea'),
     path('home/', HomeLogin.as_view(), name='inicio'),
