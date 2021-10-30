@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django import forms
+from django.db.models import Sum
+
 from .models import *
 from django.contrib.auth.models import User
 
@@ -50,6 +52,28 @@ class CursoForm(forms.ModelForm):
         self.fields['teacher'].queryset = UserApp.objects.filter(rol_teacher=3)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EmailForm(forms.Form):
+    destinatario = forms.EmailField()
+    mensaje = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super(EmailForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+class EmailandRol(forms.ModelForm):
+    class Meta:
+        model = UserApp
+        fields = ('parent_email', 'rol_teacher')
+
+    def __init__(self, *args, **kwargs):
+        super(EmailandRol, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
 
 
 class RolForm(forms.ModelForm):
@@ -142,8 +166,59 @@ class FormCalificarTarea(forms.ModelForm):
                                         f"{valor_maximo}")
 
     def __init__(self, *args, **kwargs):
-        EntregaTareas.objects.filter(codigo_tarea=kwargs.pop('pk'))
         self.identifier = kwargs.pop('pk')
         super(FormCalificarTarea, self).__init__(*args, **kwargs)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
+
+
+class FormCalificar(forms.ModelForm):
+    total = forms.IntegerField(disabled=True)
+    tareas = forms.IntegerField(disabled=True)
+
+    class Meta:
+        model = CursoAsignacion
+        fields = ('asignacion', 'tareas', 'primer_parcial', 'segundo_parcial', 'final', 'total',)
+
+    def __init__(self, *args, **kwargs):
+        self.identificador = kwargs.pop('identificador')
+        super(FormCalificar, self).__init__(*args, **kwargs)
+        valid_set = CursoAsignacion.objects.filter(id_curso_asignacion=self.identificador)
+        self.fields['tareas'].queryset = valid_set
+        self.fields['total'].queryset = valid_set
+        self.fields['total'].initial = valid_set.get().total
+        self.fields['tareas'].initial = valid_set.get().tareas
+        id_asignacion = valid_set.get().asignacion.id_asignacion
+        self.fields['asignacion'].queryset= Asignacion.objects.filter(id_asignacion=id_asignacion)
+        #self.fields['asignacion'].queryset = Asignacion.objects.filter()
+        #self.fields['tareas'].queryset = EntregaTareas.objects.filter(alumno=self.student, tarea__curso=self.curso).\
+         #   aggregate(Sum('calificacion'))
+        #year: int = datetime.now().year
+        #asignation = Asignacion.objects.filter(id_student=self.student, year=year)
+        #self.fields['asignacion'].queryset = asignation
+        #self.fields['total'].queryset = CursoAsignacion.objects.filter(asignacion=asignation,
+                    #                                                   curso=self.curso).get().total
+        # self.fields['total'].queryset = CursoAsignacion.objects.filter(asignacion=).get().total()
+
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-control'
+
+
+
+
+
+
+
+class FormEditProfile(UserChangeForm):
+    email = forms.EmailField(label='Correo Electronico', widget=forms.EmailInput(attrs={"class": "form-control"}))
+    first_name = forms.CharField(label='Nombre', max_length=100,
+                                 widget=forms.TextInput(attrs={"class": "form-control"}))
+    username = forms.CharField(label='Usuario', max_length=100, widget=forms.TextInput(attrs={"class": "form-control"}))
+    last_name = forms.CharField(label='Apellido', max_length=100,
+                                widget=forms.TextInput(attrs={"class": "form-control"}))
+    is_active = forms.CharField(label='activo', max_length=100,
+                                widget=forms.CheckboxInput(attrs={"class": "form-control"}))
+
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'last_name', 'first_name', 'is_active', 'password')

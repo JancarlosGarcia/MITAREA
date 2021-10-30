@@ -25,9 +25,13 @@
 
         <div class="card-body">
           <h2 class="card-title">{{articulo}}</h2>
-           <a href="{% url 'lista'  articulo.pk%}" class="btn btn-primary"> Lista Tareas</a>
+
             {%if is_teacher%}
             <a href="{% url 'crearTarea'  articulo.pk%}" class="btn btn-primary"> Crear Tareas</a>
+            <a href="{% url 'tabla' articulo.pk%}" class="btn btn-primary"> Calificaciones</a>
+            <a href="{% url 'lista'  articulo.pk%}" class="btn btn-primary"> Lista Tareas</a>
+            {%else%}
+            <a href="{% url 'lista'  articulo.curso.id_curso%}" class="btn btn-primary"> Lista Tareas</a>
             {%endif%}
 
 

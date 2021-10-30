@@ -1,5 +1,8 @@
+from django.core.mail import send_mail
 from django.db.models import F, Sum
 from django.shortcuts import render, get_list_or_404, redirect
+
+from classroom import settings
 from .forms import *
 from datetime import timezone, datetime
 from django.http import HttpResponseRedirect
@@ -7,21 +10,66 @@ from django.contrib import messages
 from django.utils.cache import caches
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
-from django.views.generic import CreateView, TemplateView, ListView, UpdateView
+from django.views.generic import CreateView, TemplateView, ListView, UpdateView, DetailView
 from django.urls import reverse_lazy
-from .tables import TableButton
+from .tables import TableButton,EstablecerEmail
 from django_tables2 import SingleTableView
 
 
-class UsuarioNuevo(CreateView):
+def sendMail(request):
+    messageSent = False
+    if request.method == 'POST':
+
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            subject = "enviado con django"
+            message = cd['mensaje']
+            send_mail(subject, message,
+                      settings.DEFAULT_FROM_EMAIL, [cd['destinatario']])
+
+            messageSent = True
+
+    else:
+        form = EmailForm()
+
+    return render(request, 'create_update.html', {
+        'title':'enviar correo',
+        'form': form,
+        'messageSent': messageSent,
+        'is_valid':True
+
+    })
+
+
+class UsuarioNuevo(UserPassesTestMixin, LoginRequiredMixin, CreateView):
     form_class = FormUser
     template_name = 'registration/register.html'
     success_url = reverse_lazy('asignacion')
 
+    def handle_no_permission(self):
+        return redirect('403')
+
+    def test_func(self):
+        return self.request.user.userapp.rol_teacher.id_rol == 1
+
+class UpdateRol(UpdateView):
+    form_class = EmailandRol
+    model = UserApp
+    template_name = 'create_update.html'
+    success_url = reverse_lazy('inicio')
+
+    def get_context_data(self, **kwargs):
+        context=super(UpdateRol, self).get_context_data(**kwargs)
+        context['is_valid'] = True
+        context['title'] = 'Establecer Rol and correo'
+        return context
+
+
 
 class TableCalifications(LoginRequiredMixin, SingleTableView):
     template_name = 'tabla.html'
-    # table_class = TableButton
+    table_class = TableButton
     model = CursoAsignacion
 
     def get_queryset(self, *args, **kwargs):
@@ -33,15 +81,63 @@ class TableCalifications(LoginRequiredMixin, SingleTableView):
         context['title'] = 'Calificaciones'
         return context
 
+class TableUsuarios(UserPassesTestMixin,LoginRequiredMixin,SingleTableView):
+    template_name = 'tabla.html'
+    table_class = EstablecerEmail
+    model = UserApp
 
-class CreateCurso(LoginRequiredMixin, CreateView):
+    def handle_no_permission(self):
+        return redirect('403')
+
+    def test_func(self):
+        return self.request.user.userapp.rol_teacher.id_rol == 1
+
+
+
+    def get_queryset(self, *args, **kwargs):
+        query = UserApp.objects.all()
+        return get_list_or_404(query)
+
+    def get_context_data(self, **kwargs):
+        context = super(TableUsuarios, self).get_context_data(**kwargs)
+        context['title'] = 'Usuarios'
+        return context
+
+
+#class ListaCursos(LoginRequiredMixin,ListView):
+
+
+
+
+class TableStudentCalificaciones(LoginRequiredMixin, SingleTableView):
+    template_name = 'tabla.html'
+    model = CursoAsignacion
+
+    def get_queryset(self, *args, **kwargs):
+        query = CursoAsignacion.objects.select_related().filter(asignacion__id_student=self.request.user.userapp)
+        return get_list_or_404(query)
+
+    def get_context_data(self, **kwargs):
+        context = super(TableStudentCalificaciones, self).get_context_data(**kwargs)
+        context['title'] = 'Calificaciones'
+        return context
+
+
+class CreateCurso(UserPassesTestMixin,LoginRequiredMixin, CreateView):
     form_class = CursoForm
-    template_name = 'create_update.shtml'
+    template_name = 'create_update.html'
     success_url = reverse_lazy('inicio')
+
+    def handle_no_permission(self):
+        return redirect('403')
+
+    def test_func(self):
+        return self.request.user.userapp.rol_teacher.id_rol == 1
 
     def get_context_data(self, **kwargs):
         context = super(CreateCurso, self).get_context_data(**kwargs)
         context['title'] = 'Crear Curso'
+        context['is_valid'] =True
         return context
 
 
@@ -122,8 +218,6 @@ class ListarEntregas(ListView):
         return context
 
 
-
-
 class ViewCrearTarea(CreateView):
     template_name = 'create_update.html'
     success_url = reverse_lazy('inicio')
@@ -134,13 +228,59 @@ class ViewCrearTarea(CreateView):
         kwargs['pk'] = self.kwargs['pk']
         return kwargs
 
-
-
     def get_context_data(self, **kwargs):
         context = super(ViewCrearTarea, self).get_context_data(**kwargs)
         context['title'] = 'Crear Tarea'
         context['is_valid'] = True
         return context
+
+
+class ViewCalificar(UpdateView):
+    template_name = 'create_update.html'
+    success_url = reverse_lazy('inicio')
+    form_class = FormCalificar
+    model = CursoAsignacion
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        qyer = CursoAsignacion.objects.filter(curso=self.kwargs['user_u'], id_curso_asignacion=self.kwargs['pk'])
+        kwargs['identificador'] = qyer.get().id_curso_asignacion
+        return kwargs
+
+    def get_object(self, queryset=None):
+        qyer = CursoAsignacion.objects.filter(curso=self.kwargs['user_u'], id_curso_asignacion=self.kwargs['pk'])
+        identificador = qyer.get().id_curso_asignacion
+        objectt = self.model.objects.get(pk=identificador)
+        return objectt
+
+    def get_context_data(self, **kwargs):
+        context = super(ViewCalificar, self).get_context_data(**kwargs)
+        context['title'] = 'Calificar'
+        context['is_valid'] = True
+        return context
+
+class ListaEntregasPorAlumno(ListView):
+    model = EntregaTareas
+    template_name = 'lista.html'
+    paginate_by = 7
+
+    def get_queryset(self,*args,**kwargs):
+        query = EntregaTareas.objects.filter(alumno=self.kwargs['pk'], tarea__curso=self.kwargs['curso'])
+        return get_list_or_404(query)
+
+    def get_context_data(self, **kwargs):
+        context = super(ListaEntregasPorAlumno, self).get_context_data(**kwargs)
+        context['title'] = 'Listar Entregas '
+        context['tareas'] = True
+        context['is_entregas_alumno']= True
+        return context
+
+
+class DetailViewEntrega(DetailView):
+    model = EntregaTareas
+    template_name = 'detalle.html'
+
+
 
 
 class ListaTareas(ListView):
@@ -173,6 +313,10 @@ class CreateAsignacion(LoginRequiredMixin, CreateView):
         return context
 
 
+
+
+
+
 class CreateRol(UserPassesTestMixin, LoginRequiredMixin, CreateView):
     form_class = RolForm
     template_name = 'create_update.html'
@@ -196,7 +340,13 @@ class ListCursos(ListView):
     paginate_by = 7
 
     def get_queryset(self, *args, **kwargs):
-        return get_list_or_404(Curso.objects.get)
+        return get_list_or_404(Curso.objects.filter())
+
+    def get_context_data(self, **kwargs):
+        context = super(ListCursos, self).get_context_data(**kwargs)
+        context['title'] = 'Lista Cursos'
+        context['is_list_course'] = True
+        return context
 
 
 class ListStudent(LoginRequiredMixin, ListView):
@@ -242,6 +392,19 @@ class RegistrarAsignacion(CreateView):
         return context
 
 
+class ViewEditProfile(LoginRequiredMixin, UpdateView):
+    form_class = FormEditProfile
+    model = User
+    template_name = 'create_update.html'
+    success_url = reverse_lazy('inicio')
+
+    def get_context_data(self, **kwargs):
+        context = super(ViewEditProfile, self).get_context_data(**kwargs)
+        context['title'] = 'Editar Perfil'
+        context['is_valid'] = True
+        return context
+
+
 def home(request):
     return redirect('login')
 
@@ -260,13 +423,48 @@ class HomeLogin(LoginRequiredMixin, TemplateView):
         is_admin: bool = rol_current_user == 1
         is_student: bool = rol_current_user == 4
         is_teacher: bool = rol_current_user == 3
+        options_list_teacher = {
+            'fa fa-home': {
+                'link': "inicio",
+                'label': 'Inicio',
+                'icon': 'fa fa-home'},
+            'fas fa-envelope-open':{
+                'link': 'sendmail',
+                'label': 'enviar Correo',
+            }
+
+        }
+        if is_admin:
+            options_list_teacher['fas fa-thumbtack'] = {
+                'link': 'register',
+                'label': 'Registrar Nuevo Usuario'}
+            options_list_teacher['fas fa-user'] = {
+                'link':'allusuarios',
+                'label':'Lista de usuarios'
+            }
+            options_list_teacher['fas fa-sticky-note']={
+                'link':'asignarCurso',
+                'label':'Asignar Cursos'
+            }
+            options_list_teacher['fas fa-clipboard-check']={
+                'link' : 'curso',
+                'label': 'Crear Cursos'
+            }
+            options_list_teacher['fas fa-list'] = {
+                'link':'listacursos',
+                'label':'Listar Cursos'
+            }
+
         if is_teacher:
             context['object_list'] = Curso.objects.filter(teacher=user_app)
             context['is_teacher'] = is_teacher
         if is_student:
             year: int = datetime.now().year
             asignacion = Asignacion.objects.filter(id_student=user_app, year=year).get()
-            context['object_list'] = CursoAsignacion.objects.filter(asignacion=asignacion.id_asignacion)
+            query = CursoAsignacion.objects.filter(asignacion=asignacion.id_asignacion)
+            context['object_list'] = query
+        context['elementos'] = options_list_teacher
+
         return context
 
 
@@ -280,7 +478,14 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
     form_class = FormCalificarTarea
     model = EntregaTareas
     template_name = 'create_update.html'
-    success_url = reverse_lazy('inicio')
+
+    # success_url = reverse_lazy('inicio')
+
+    def get_success_url(self):
+        codigo_entrega = self.kwargs['pk']
+        id_tarea = EntregaTareas.objects.filter(codigo_tarea=codigo_entrega).values('tarea')[0]['tarea']
+
+        return reverse_lazy('entregas', kwargs={'pk': id_tarea})
 
     def test_func(self):
         return self.request.user.userapp.rol_teacher.id_rol == 3
@@ -293,10 +498,6 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
         kwargs['pk'] = self.kwargs['pk']
         return kwargs
 
-
-
-
-
     def form_valid(self, form):
         year: int = datetime.now().year
         codigo_entrega = self.kwargs['pk']
@@ -306,10 +507,13 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
         asignacion = Asignacion.objects.filter(year=year, id_student=alumno)
         obtener = asignacion.get()
         consulta_total = \
-            EntregaTareas.objects.filter(alumno=alumno, tarea__curso=curso).exclude(codigo_tarea=codigo_entrega).aggregate(Sum('calificacion'))
+            EntregaTareas.objects.filter(alumno=alumno, tarea__curso=curso).exclude(
+                codigo_tarea=codigo_entrega).aggregate(Sum('calificacion'))
         total_suma = consulta_total['calificacion__sum'] + form.cleaned_data['calificacion']
         subjectAssign = CursoAsignacion.objects.filter(curso=curso, asignacion_id__id_student=alumno)
-        subjectAssign.update(tareas=F('tareas') + total_suma)
+        subjectAssign.update(tareas=total_suma)
+        subjectAssign.update(total=F('tareas') + F('primer_parcial') + F('segundo_parcial') +
+                                   F('final'))
         return super(ViewCalificarTarea, self).form_valid(form)
 
     def get_context_data(self, **kwargs):

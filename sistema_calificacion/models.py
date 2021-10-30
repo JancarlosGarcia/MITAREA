@@ -82,7 +82,6 @@ class CursoAsignacion(models.Model):
         self.total = self.tareas+self.primer_parcial+self.segundo_parcial+self.final
         return super(CursoAsignacion, self).save()
 
-
     def __str__(self):
         return self.curso.name_curso
 
@@ -107,6 +106,9 @@ class Tareas(models.Model):
     curso = models.ForeignKey(Curso, on_delete=models.CASCADE, default=0)
     valor = models.IntegerField(default=0)
     fecha_de_entrega = models.DateTimeField()
+
+
+
 
     def __str__(self):
         return self.title

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %} Detalle  {%endblock%}
+
+{%block content%}
+{% load static %}
+<div class="card text-black mb-3 mx-auto" style="width: 29rem;opacity:0.9">
+    <h4 class="card-header">
+        {{object.codigo_tarea}}
+    </h4>
+     <div class="card-body">
+         <p class="card-text"><b>Tarea</b>:{{object.tarea}} </p>
+         <p class="card-text"><b>Alumno</b>:{{object.alumno}} </p>
+         <p class="card-text"><b>Calificacion</b>:{{object.calificacion}} </p>
+         <p class="card-text"><b>Archivo</b>:{{object.archivo_asociado}} </p>
+         <p class="card-text"><b>fecha</b>:{{object.fecha_de_subida }} </p>
+     </div>
+</div>
+{%endblock%}

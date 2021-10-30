@@ -18,6 +18,12 @@
         {%if is_calificar%}
         <a href="{%url 'calificar' articulo.pk %}" class="btn btn-primary" type="submit"> Calificar</a>
         {%endif%}
+        {%if is_list_course%}
+         <a href="{% url 'tabla' articulo.pk%}" class="btn btn-primary"> Detalle</a>
+        {%endif%}
+        {%if is_entregas_alumno%}
+        <a href="{% url 'detail' articulo.pk%}" class="btn btn-primary"> Detalle</a>
+        {%endif%}
 
     </div>
 {%endfor%}
