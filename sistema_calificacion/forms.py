@@ -140,12 +140,22 @@ class FormCrearTarea(forms.ModelForm):
 
 
 class FormSubirTarea(forms.ModelForm):
+    #alumno = forms.CharField(disabled=True)
+    #tarea = forms.CharField(disabled=True)
+    #fecha_de_subida = forms.DateTimeField(disabled=True)
+
     class Meta:
         model = EntregaTareas
-        fields = ('archivo_asociado',)
+        fields = ('archivo_asociado','alumno','tarea')
 
     def __init__(self, *args, **kwargs):
+        user_id = kwargs.pop('user_request')
+        code_tarea = kwargs.pop('pk')
         super(FormSubirTarea, self).__init__(*args, **kwargs)
+        self.fields['alumno'].queryset = UserApp.objects.filter(id_userApp=user_id)
+
+        #self.fields['alumno'].initial = UserApp.objects.filter(id_userApp=user_id).get()
+        self.fields['tarea'].queryset = Tareas.objects.filter(id_tarea=code_tarea)
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
 

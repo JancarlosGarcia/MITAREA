@@ -169,11 +169,19 @@ class ViewSubirTarea(UserPassesTestMixin, LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         object = form.save(commit=False)
-        form.alumno = self.request.user.userapp
-        form.tarea = Tareas.objects.filter(id_tarea=self.kwargs['pk'])[0]
+        #form.alumno = self.request.user.userapp
+        form.tarea_id = self.kwargs['pk']
         form.fecha_de_subida = datetime.now(timezone.utc)
         form.save()
         return super(ViewSubirTarea, self).form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['pk'] = self.kwargs['pk']
+        kwargs['user_request'] = self.request.user.userapp.id_userApp
+        return kwargs
+
+
 
     def handle_no_permission(self):
         return redirect('403')
@@ -194,7 +202,8 @@ class ViewSubirTarea(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         title = contenido['title']
         description = contenido['description']
         date_current: datetime = datetime.now(timezone.utc)
-        isValid: bool = contenido['fecha_de_entrega'] < date_current
+        date_entrega = contenido['fecha_de_entrega']
+        isValid: bool = date_current <= date_entrega
         context['title'] = f' {title} '
         context['fecha'] = contenido['fecha_de_entrega']
         context['description'] = description
@@ -208,7 +217,8 @@ class ListarEntregas(ListView):
     paginate_by = 7
 
     def get_queryset(self):
-        return get_list_or_404(EntregaTareas.objects.filter(tarea=self.kwargs['pk']))
+        query = EntregaTareas.objects.filter(tarea=self.kwargs['pk'])
+        return get_list_or_404(query)
 
     def get_context_data(self, **kwargs):
         context = super(ListarEntregas, self).get_context_data(**kwargs)
@@ -483,7 +493,7 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         codigo_entrega = self.kwargs['pk']
-        id_tarea = EntregaTareas.objects.filter(codigo_tarea=codigo_entrega).values('tarea')[0]['tarea']
+        id_tarea = EntregaTareas.objects.filter(codigo_tarea=codigo_entrega).get().tarea.id_tarea
 
         return reverse_lazy('entregas', kwargs={'pk': id_tarea})
 
@@ -509,7 +519,11 @@ class ViewCalificarTarea(UserPassesTestMixin, LoginRequiredMixin, UpdateView):
         consulta_total = \
             EntregaTareas.objects.filter(alumno=alumno, tarea__curso=curso).exclude(
                 codigo_tarea=codigo_entrega).aggregate(Sum('calificacion'))
-        total_suma = consulta_total['calificacion__sum'] + form.cleaned_data['calificacion']
+        if consulta_total['calificacion__sum']:
+            suma= consulta_total
+        else:
+            suma = 0
+        total_suma = suma + form.cleaned_data['calificacion']
         subjectAssign = CursoAsignacion.objects.filter(curso=curso, asignacion_id__id_student=alumno)
         subjectAssign.update(tareas=total_suma)
         subjectAssign.update(total=F('tareas') + F('primer_parcial') + F('segundo_parcial') +
