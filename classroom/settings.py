@@ -57,7 +57,7 @@ ROOT_URLCONF = 'classroom.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [f'{BASE_DIR}/sistema_calificaciones/Templates'],
+        'DIRS': [f'{BASE_DIR}/sistema_calificacion/Templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,10 +128,10 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-DEFAULT_FROM_EMAIL = 'antiguasistemagrupo3@gmail.com'
+DEFAULT_FROM_EMAIL = 'plataformaweb89@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'antiguasistemagrupo3@gmail.com'
-EMAIL_HOST_PASSWORD = '123456789'
+EMAIL_HOST_USER = 'plataformaweb89@gmail.com'
+EMAIL_HOST_PASSWORD = 'Salsa1234'
